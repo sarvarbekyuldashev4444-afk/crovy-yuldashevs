@@ -1,18 +1,38 @@
 app = "crovy-yuldashevs"
-
 primary_region = "fra"
+
+kill_signal = "SIGINT"
+kill_timeout = "5s"
 
 [build]
   dockerfile = "Dockerfile"
 
 [env]
+  PORT = "8080"
+
   APP_URL = "https://crovy-yuldashevs.fly.dev"
   WEBAPP_URL = "https://crovy-yuldashevs.fly.dev"
+
   BOT_USERNAME = "crovybot"
+
+  DATA_DIR = "/data"
+  DB_PATH = "/data/market.db"
+  UPLOAD_DIR = "/data/uploads"
+
+  SEED_DB_PATH = "/app/market.db"
+  SEED_UPLOAD_DIR = "/app/webapp/uploads"
+
+  TZ = "Asia/Tashkent"
+  PYTHONUNBUFFERED = "1"
 
 [[mounts]]
   source = "data"
   destination = "/data"
+  initial_size = "1GB"
+  snapshot_retention = 7
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = "1GB"
+  auto_extend_size_limit = "5GB"
 
 [http_service]
   internal_port = 8080
@@ -21,12 +41,20 @@ primary_region = "fra"
   auto_start_machines = true
   min_machines_running = 1
 
-[checks]
-  [checks.web]
-    grace_period = "20s"
-    interval = "30s"
-    method = "get"
-    path = "/api/health"
-    port = 8080
-    timeout = "5s"
-    type = "http"
+[http_service.concurrency]
+  type = "requests"
+  soft_limit = 50
+  hard_limit = 100
+
+[[http_service.checks]]
+  grace_period = "20s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/api/health"
+  protocol = "http"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
