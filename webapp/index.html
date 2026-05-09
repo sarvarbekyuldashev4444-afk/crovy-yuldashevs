@@ -1,0 +1,970 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crovy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="stylesheet" href="src/shared/styles/ui-system.css?v=4">
+    <link rel="stylesheet" href="src/shared/styles/radius-theme.css?v=10">
+    <link rel="stylesheet" href="src/shared/motion/motion-system.css?v=4">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <script src="/vendor/leaflet/leaflet.js"></script>
+</head>
+<body>
+
+    <div class="page active" id="page-home">
+        <div class="page-inner">
+            <header class="app-topbar">
+                <div class="market-brand">
+                    <h1 class="market-title" id="marketTitle">Crovy</h1>
+                    <p class="market-subtitle" id="marketSubtitle">Shokoladdagi qulupnay va sovg'a boxlarini bir necha bosishda buyurtma qiling.</p>
+                </div>
+            </header>
+            <div class="search-bar">
+                <i class="fi fi-rr-search search-icon"></i>
+                <input type="text" placeholder="Qidirish" id="searchInput">
+            </div>
+            <div class="promo-carousel" id="promoCarousel" style="display:none;">
+                <div class="promo-carousel-track" id="promoCarouselTrack"></div>
+                <div class="promo-carousel-dots" id="promoCarouselDots"></div>
+            </div>
+            <div class="section-header"><h2 class="section-title">Mahsulotlar</h2></div>
+            <div class="category-tabs" id="categoryTabs">
+            </div>
+            <div id="catalog" style="margin-bottom:20px;"></div>
+
+            <div class="product-modal-overlay" id="productModal">
+                <div class="product-modal">
+                    <button class="modal-close" id="modalClose"><i class="fi fi-rr-cross-small"></i></button>
+                    <div class="modal-image-wrap" id="modalImageWrap">
+                        <div class="modal-image" id="modalImage"></div>
+                        <div class="modal-image-indicators" id="modalImageIndicators"></div>
+                    </div>
+                    <div class="modal-body">
+                        <h2 class="modal-title" id="modalTitle">Mahsulot nomi</h2>
+                        <div class="modal-variants" id="modalVariants"></div>
+                        <div class="modal-desc" id="modalDesc"></div>
+                        <div class="modal-footer">
+                            <div class="modal-price" id="modalPrice">0 so'm</div>
+                            <button class="modal-btn" id="modalAddBtn">Savatga qo'shish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="page" id="page-cart">
+        <div class="page-inner">
+            <h1 class="page-title">Savat</h1>
+
+            <div class="segment-toggle">
+                <div class="segment-slider" id="segmentSlider"></div>
+                <button class="segment-btn active" data-type="delivery">Yetkazib berish</button>
+                <button class="segment-btn" data-type="pickup">Olib ketish</button>
+            </div>
+
+            <div id="delivery-section" class="order-section">
+                <div id="lastAddressHint" class="last-address-hint" style="display:none;">
+                    <i class="fi fi-rr-time-past hint-icon"></i>
+                    <span class="hint-label">Oldingi manzil</span>
+                    <button class="hint-btn" id="useLastAddress"></button>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Manzilni kiriting</label>
+                    <div class="address-wrap">
+                        <input type="text" id="addressInput" class="app-input" placeholder="Manzil..." autocomplete="off">
+                        <div id="suggestDropdown" class="suggest-dropdown"></div>
+                    </div>
+                </div>
+                <button class="location-btn" id="sendLocationBtn">
+                    <i class="fi fi-rr-marker"></i>
+                    Xaritadan tanlash
+                </button>
+                <div id="deliveryMapWrap" class="map-wrap" style="display:none;">
+                    <div id="deliveryMap" class="map-container"></div>
+                    <button class="map-locate-btn" id="deliveryLocateBtn" title="Mening joylashuvim">
+                        <i class="fi fi-rr-crosshairs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="pickup-section" class="order-section" style="display:none;">
+                <p class="order-section-hint">Xaritadan filialni tanlang</p>
+                <div class="map-wrap">
+                    <div id="pickupMap" class="map-container"></div>
+                </div>
+                <div id="branchInfo" class="branch-card" style="display:none;">
+                    <div class="branch-card-header">
+                        <i class="fi fi-rr-marker"></i>
+                        <p class="branch-name" id="branchName">Filial</p>
+                    </div>
+                    <p class="branch-address" id="branchAddress"></p>
+                    <p class="branch-hours" id="branchHours"></p>
+                </div>
+            </div>
+
+            <div class="input-group promo-group">
+                <label class="input-label">Promo kod</label>
+                <div class="promo-wrap">
+                    <input type="text" id="promoInput" class="app-input" placeholder="Kodni kiriting">
+                    <button class="promo-apply-btn" id="applyPromoBtn">Qo'llash</button>
+                </div>
+                <p class="promo-msg" id="promoMsg"></p>
+            </div>
+
+            <div id="cart-items" class="cart-items"></div>
+            <div id="cart-empty" class="empty-state">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                <p>Savatda mahsulotlar mavjud emas</p>
+            </div>
+
+            <div id="cart-summary" class="cart-summary" style="display:none;">
+                <div class="input-group" style="margin-bottom: 12px;">
+                    <label class="input-label">Telefon raqamingiz <span style="color:var(--color-accent)">*</span></label>
+                    <input type="tel" id="phoneInput" class="app-input" placeholder="+998 90 123 45 67">
+                </div>
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label class="input-label">Izoh (ixtiyoriy)</label>
+                    <input type="text" id="commentInput" class="app-input" placeholder="Kuryerga izoh yoki mo'ljal...">
+                </div>
+                <hr style="border: none; border-top: 1px dashed var(--divider); margin: 0 0 12px 0;">
+                <div class="summary-row"><span>Jami</span><span id="subtotal">0</span></div>
+                <div class="summary-row" id="promo-discount-row" style="display:none;"><span>Promokod</span><span id="promo-discount">0</span></div>
+                <div class="summary-row"><span>Yetkazib berish</span><span id="delivery-cost">0</span></div>
+                <div class="summary-row total"><span>Umumiy summa</span><span id="total-price">0</span></div>
+                <div class="option-group">
+                    <label class="option-label">To'lov usuli</label>
+                    <div class="option-buttons">
+                        <button class="opt-btn active" data-pay="cash">Naqd</button>
+                        <button class="opt-btn" data-pay="card">Karta</button>
+                    </div>
+                </div>
+                <button class="checkout-btn" id="checkoutBtn">Buyurtma berish</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-offices">
+        <div class="page-inner">
+            <h1 class="page-title">Filiallar</h1>
+            <p class="page-subtitle">Barcha manzillarimiz</p>
+            <div class="map-wrap map-wrap-full">
+                <div id="officesMap" class="map-container map-full"></div>
+            </div>
+            <div id="officesList" class="offices-list"></div>
+        </div>
+    </div>
+
+    <div class="page" id="page-profile">
+        <div class="page-inner">
+            <h1 class="page-title">Profil</h1>
+            <div class="profile-card">
+                <div class="profile-avatar" id="profileAvatar">U</div>
+                <div class="profile-info">
+                    <p class="profile-name" id="profileName">Foydalanuvchi</p>
+                    <p class="profile-id" id="profileId">ID: -</p>
+                </div>
+                <div id="adminPanelBtnWrap" style="display:none; margin-left:auto;">
+                    <button class="adm-entry-btn" id="openAdminBtn">
+                        <i class="fi fi-rr-shield-check"></i>
+                        Panel
+                    </button>
+                </div>
+            </div>
+            <div class="profile-edit-card">
+                <h3 class="profile-section-title">Profil ma'lumotlari</h3>
+                <div class="edit-row">
+                    <input type="text" id="editFirstName" class="app-input" placeholder="Ism">
+                    <input type="text" id="editLastName" class="app-input" placeholder="Familiya">
+                </div>
+                <div class="input-group profile-phone-group">
+                    <label class="input-label">Telefon raqami</label>
+                    <input type="tel" id="editPhone" class="app-input" placeholder="+998 90 123 45 67">
+                </div>
+                <button class="save-name-btn" id="saveNameBtn">Saqlash</button>
+                <p class="save-msg" id="saveMsg"></p>
+            </div>
+            <div class="profile-section">
+                <h3 class="profile-section-title">Buyurtmalar tarixi</h3>
+                <div id="orderHistory" class="order-history">
+                    <div class="empty-state small"><p>Hali buyurtmalar yo'q</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-admin" style="z-index: 100; background: var(--bg);">
+        <div class="page-inner adm-page-inner">
+
+            <div class="adm-header">
+                <button class="adm-back-btn" id="closeAdminBtn">
+                    <i class="fi fi-rr-arrow-left"></i>
+                </button>
+                <div class="adm-header-title">
+                    <h1>Boshqaruv paneli</h1>
+                    <span id="admRoleBadge" class="adm-role-badge">Admin</span>
+                </div>
+                <button class="adm-refresh-btn" id="admRefreshBtn">
+                    <i class="fi fi-rr-refresh"></i>
+                </button>
+            </div>
+
+            <div class="adm-stats-row" id="admStatsRow">
+                <div class="adm-stat-card">
+                    <div class="adm-stat-value" id="statPending">-</div>
+                    <div class="adm-stat-label">Kutilmoqda</div>
+                </div>
+                <div class="adm-stat-card">
+                    <div class="adm-stat-value" id="statConfirmed">-</div>
+                    <div class="adm-stat-label">Tasdiqlangan</div>
+                </div>
+                <div class="adm-stat-card">
+                    <div class="adm-stat-value" id="statRevenue">-</div>
+                    <div class="adm-stat-label">Daromad</div>
+                </div>
+            </div>
+
+            <div class="adm-tab-nav">
+                <button class="adm-tab-item active" data-atab="adm-orders">
+                    <i class="fi fi-rr-receipt"></i>
+                    <span>Buyurtmalar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-products">
+                    <i class="fi fi-rr-box-open"></i>
+                    <span>Tovarlar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-promocodes" id="admPromocodesTabBtn">
+                    <i class="fi fi-rr-ticket"></i>
+                    <span>Promokodlar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-customers" id="admCustomersTabBtn">
+                    <i class="fi fi-rr-users-alt"></i>
+                    <span>Klientlar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-receipts" id="admReceiptsTabBtn">
+                    <i class="fi fi-rr-document-signed"></i>
+                    <span>Cheklar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-users" id="admUsersTabBtn" style="display:none;">
+                    <i class="fi fi-rr-user"></i>
+                    <span>Xodimlar</span>
+                </button>
+                <button class="adm-tab-item" data-atab="adm-settings" id="admSettingsTabBtn" style="display:none;">
+                    <i class="fi fi-rr-settings"></i>
+                    <span>Sozlamalar</span>
+                </button>
+            </div>
+
+            <div id="adm-orders" class="adm-section">
+                <div class="adm-filter-row" id="admFilterRow">
+                    <button class="adm-chip active" data-filter="all">Barchasi</button>
+                    <button class="adm-chip" data-filter="pending">Kutilmoqda</button>
+                    <button class="adm-chip" data-filter="confirmed">Tasdiqlangan</button>
+                    <button class="adm-chip" data-filter="yetkazilmoqda">Yo'lda</button>
+                    <button class="adm-chip" data-filter="yetkazildi">Yakunlangan</button>
+                    <button class="adm-chip" data-filter="cancelled">Bekor</button>
+                </div>
+                <div id="admOrdersList" class="adm-list">
+                    <div class="adm-loading">
+                        <div class="adm-spinner"></div>
+                        <span>Yuklanmoqda...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adm-products" class="adm-section" style="display:none;">
+                <div class="adm-product-tools">
+                    <div class="search-bar adm-product-search">
+                        <i class="fi fi-rr-search search-icon"></i>
+                        <input type="text" placeholder="Tovar yoki artikul bo'yicha qidirish" id="admProductSearch">
+                    </div>
+                    <button class="adm-add-btn" id="admAddProductBtn">
+                        <i class="fi fi-rr-plus-small"></i>
+                        Yangi tovar qo'shish
+                    </button>
+                    <button class="adm-add-btn adm-carousel-btn" id="admCarouselBtn">
+                        <i class="fi fi-rr-picture"></i>
+                        Aksiyalar karuseli
+                    </button>
+                </div>
+                <div id="admProductsList" class="adm-list">
+                    <div class="adm-loading">
+                        <div class="adm-spinner"></div>
+                        <span>Yuklanmoqda...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adm-promocodes" class="adm-section" style="display:none;">
+                <div class="adm-product-tools">
+                    <button class="adm-add-btn" id="admAddPromoBtn">
+                        <i class="fi fi-rr-plus-small"></i>
+                        Promokod qo'shish
+                    </button>
+                </div>
+                <div id="admPromocodesList" class="adm-list">
+                    <div class="adm-loading">
+                        <div class="adm-spinner"></div>
+                        <span>Yuklanmoqda...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adm-users" class="adm-section" style="display:none;">
+                <div id="admUsersList" class="adm-list">
+                    <div class="adm-loading">
+                        <div class="adm-spinner"></div>
+                        <span>Yuklanmoqda...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adm-customers" class="adm-section" style="display:none;">
+                <div class="adm-panel-tools adm-customer-tools">
+                    <input type="text" id="admCustomerSearch" class="app-input" placeholder="Ism, telefon yoki Telegram ID">
+                    <button class="adm-icon-btn" id="admCustomerFilterToggle" type="button" aria-label="Mijoz filtrlarini ochish" aria-expanded="false">
+                        <i class="fi fi-rr-settings-sliders"></i>
+                    </button>
+                    <div class="adm-customer-advanced" id="admCustomerAdvanced">
+                        <input type="number" id="admCustomerMinOrders" class="app-input super-only" placeholder="Min buyurtma">
+                        <input type="number" id="admCustomerMinTotal" class="app-input super-only" placeholder="Min summa">
+                        <select id="admCustomerSort" class="app-input super-only">
+                            <option value="activity">Faollik</option>
+                            <option value="total">Summa</option>
+                            <option value="orders">Buyurtmalar</option>
+                            <option value="registered">Ro'yxatdan</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="admCustomerAccess" class="adm-access-note" style="display:none;"></div>
+                <div id="admCustomersList" class="adm-list"></div>
+                <div id="admCustomerProfile" class="adm-customer-profile" style="display:none;"></div>
+            </div>
+
+            <div id="adm-receipts" class="adm-section" style="display:none;">
+                <div class="adm-receipt-basic">
+                    <input type="text" id="admReceiptQ" class="app-input" placeholder="Order ID / Receipt ID">
+                    <button class="adm-icon-btn" id="admReceiptFilterToggle" type="button" aria-label="Filtrlarni ochish" aria-expanded="false">
+                        <i class="fi fi-rr-settings-sliders"></i>
+                    </button>
+                </div>
+                <div class="adm-receipt-advanced" id="admReceiptAdvanced">
+                    <div class="adm-panel-tools adm-receipt-tools">
+                    <input type="number" id="admReceiptFrom" class="app-input" placeholder="Summa dan">
+                    <input type="number" id="admReceiptTo" class="app-input" placeholder="Summa gacha">
+                    <input type="date" id="admReceiptDateFrom" class="app-input">
+                    <input type="date" id="admReceiptDateTo" class="app-input">
+                    <input type="text" id="admReceiptUser" class="app-input" placeholder="User ID">
+                    <input type="text" id="admReceiptPhone" class="app-input" placeholder="Telefon">
+                    <input type="text" id="admReceiptAdmin" class="app-input" placeholder="Admin/kassir">
+                    <input type="text" id="admReceiptCourier" class="app-input" placeholder="Kuryer">
+                    <select id="admReceiptStatus" class="app-input">
+                        <option value="">Status</option>
+                        <option value="pending">Kutilmoqda</option>
+                        <option value="tekshirilmoqda">To'lov tekshirilmoqda</option>
+                        <option value="confirmed">Tasdiqlangan</option>
+                        <option value="yetkazilmoqda">Yo'lda</option>
+                        <option value="yetkazildi">Yakunlangan</option>
+                        <option value="cancelled">Bekor</option>
+                    </select>
+                    <select id="admReceiptPayment" class="app-input">
+                        <option value="">To'lov</option>
+                        <option value="cash">Naqd</option>
+                        <option value="card">Karta</option>
+                        <option value="click">Click</option>
+                        <option value="payme">Payme</option>
+                        <option value="transfer">O'tkazma</option>
+                    </select>
+                    <select id="admReceiptDelivery" class="app-input">
+                        <option value="">Olish turi</option>
+                        <option value="delivery">Yetkazish</option>
+                        <option value="pickup">Olib ketish</option>
+                    </select>
+                    <select id="admReceiptSort" class="app-input">
+                        <option value="date_desc">Yangi birinchi</option>
+                        <option value="date_asc">Eski birinchi</option>
+                        <option value="sum_desc">Summa yuqori</option>
+                        <option value="sum_asc">Summa past</option>
+                    </select>
+                    <button class="adm-reset-btn" id="admReceiptResetBtn" type="button">
+                        Tozalash
+                    </button>
+                    </div>
+                    <div class="adm-receipt-quick">
+                        <button type="button" class="adm-chip" data-receipt-range="today">Bugun</button>
+                        <button type="button" class="adm-chip" data-receipt-range="yesterday">Kecha</button>
+                        <button type="button" class="adm-chip" data-receipt-range="week">Hafta</button>
+                        <button type="button" class="adm-chip" data-receipt-range="month">Oy</button>
+                    </div>
+                </div>
+                <div id="admReceiptSummary" class="adm-receipt-summary"></div>
+                <div id="admReceiptsList" class="adm-list"></div>
+            </div>
+
+            <div id="adm-settings" class="adm-section" style="display:none;">
+                <div class="settings-grid">
+                    <div class="input-group">
+                        <label class="input-label">Do'kon nomi</label>
+                        <input type="text" id="admSetStoreName" class="app-input">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Xush kelibsiz matni</label>
+                        <textarea id="admSetWelcome" class="app-input settings-textarea"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Bot tugmasi</label>
+                        <input type="text" id="admSetButton" class="app-input">
+                    </div>
+                    <div class="settings-two-col">
+                        <div class="input-group">
+                            <label class="input-label">Yetkazish rejimi</label>
+                            <select id="admSetDeliveryMode" class="app-input">
+                                <option value="all">Yetkazish + olib ketish</option>
+                                <option value="delivery_only">Faqat yetkazish</option>
+                                <option value="pickup_only">Faqat olib ketish</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Yetkazish narxi</label>
+                            <input type="number" id="admSetDeliveryBase" class="app-input">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Yetkazish vaqti (soat)</label>
+                        <input type="number" id="admSetDeliveryEtaHours" class="app-input" placeholder="24">
+                    </div>
+                    <div class="settings-two-col">
+                        <div class="input-group">
+                            <label class="input-label">Minimal buyurtma</label>
+                            <input type="number" id="admSetMinOrder" class="app-input">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Map zoom</label>
+                            <input type="number" id="admSetMapZoom" class="app-input">
+                        </div>
+                    </div>
+                    <div class="settings-two-col">
+                        <div class="input-group">
+                            <label class="input-label">Karta raqami</label>
+                            <input type="text" id="admSetCardNumber" class="app-input">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Karta egasi</label>
+                            <input type="text" id="admSetCardHolder" class="app-input">
+                        </div>
+                    </div>
+                    <div class="settings-color-grid">
+                        <div class="input-group color-field">
+                            <label class="input-label">Asosiy rang</label>
+                            <label class="color-picker-shell" for="admSetAccent">
+                                <span class="color-swatch-preview" id="admAccentPreview"></span>
+                                <span class="color-picker-copy">
+                                    <b>Accent</b>
+                                    <small id="admAccentValue">#c3c7cf</small>
+                                </span>
+                                <input type="color" id="admSetAccent" class="color-input">
+                            </label>
+                            <div class="color-presets" id="admAccentPresets"></div>
+                        </div>
+                        <div class="input-group color-field">
+                            <label class="input-label">Fon rangi</label>
+                            <label class="color-picker-shell" for="admSetBg">
+                                <span class="color-swatch-preview" id="admBgPreview"></span>
+                                <span class="color-picker-copy">
+                                    <b>Background</b>
+                                    <small id="admBgValue">#ffffff</small>
+                                </span>
+                                <input type="color" id="admSetBg" class="color-input">
+                            </label>
+                            <div class="color-presets" id="admBgPresets"></div>
+                        </div>
+                    </div>
+                    <div class="adm-toggle-row settings-toggle-row">
+                        <label class="adm-toggle-label">Texnik ishlar rejimi</label>
+                        <label class="adm-switch">
+                            <input type="checkbox" id="admSetMaintenanceEnabled">
+                            <span class="adm-slider"></span>
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Texnik ishlar matni</label>
+                        <textarea id="admSetMaintenanceText" class="app-input settings-textarea"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Kategoriyalar</label>
+                        <div class="settings-visual-editor">
+                            <div class="settings-add-row">
+                                <input type="text" id="admCategoryNewInput" class="app-input" placeholder="Yangi kategoriya">
+                                <button type="button" class="settings-mini-btn primary" id="admCategoryAddBtn">Qo'shish</button>
+                            </div>
+                            <div id="admCategoriesEditor" class="settings-chip-list"></div>
+                        </div>
+                        <textarea id="admSetCategories" class="app-input settings-textarea code-area settings-json-fallback"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Filiallar</label>
+                        <div class="settings-visual-editor">
+                            <div id="admBranchesEditor" class="settings-branch-list"></div>
+                            <button type="button" class="settings-mini-btn primary" id="admBranchAddBtn">Filial qo'shish</button>
+                        </div>
+                        <textarea id="admSetBranches" class="app-input settings-textarea code-area settings-json-fallback"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Referal kodlar JSON</label>
+                        <textarea id="admSetReferral" class="app-input settings-textarea code-area"></textarea>
+                    </div>
+                    <div class="template-schema-card">
+                        <div class="template-schema-title">Template CMS</div>
+                        <div class="settings-two-col">
+                            <div class="input-group">
+                                <label class="input-label">Market settings JSON</label>
+                                <textarea id="admSetMarketSettings" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">name, description, logo, favicon, language, currency, contacts, Telegram/social links.</p>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Home settings JSON</label>
+                                <textarea id="admSetHomeSettings" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">hero title/subtitle, search placeholder, CTA blocks, section behavior.</p>
+                            </div>
+                        </div>
+                        <div class="settings-two-col">
+                            <div class="input-group">
+                                <label class="input-label">Product cards JSON</label>
+                                <textarea id="admSetProductCardSettings" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">price, discount, rating, button, image format, badges, layout.</p>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">System messages JSON</label>
+                                <textarea id="admSetSystemMessages" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">empty states, errors, loading messages, maintenance copy fallbacks.</p>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Bot xabarlari</label>
+                                <div id="admBotMessagesEditor" class="settings-bot-message-list"></div>
+                                <textarea id="admSetBotMessages" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">Telegram bot yuboradigan barcha matnlar. Placeholderlar saqlansin: order_code, total, reason, payment, delivery va emoji_*.</p>
+                            </div>
+                        </div>
+                        <div class="settings-two-col">
+                            <div class="input-group">
+                                <label class="input-label">SEO JSON</label>
+                                <textarea id="admSetSeo" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">title, description, image. Sahifa metama'lumotlari uchun.</p>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Pastki menyu</label>
+                                <div id="admNavigationEditor" class="settings-nav-editor"></div>
+                                <textarea id="admSetNavigation" class="app-input settings-textarea code-area settings-json-fallback"></textarea>
+                                <p class="template-help">Har bir punktni yoqish/o'chirish, nomi va tartibini sozlash mumkin.</p>
+                            </div>
+                        </div>
+                        <div class="settings-two-col">
+                            <div class="input-group">
+                                <label class="input-label">Sahifa bloklari JSON</label>
+                                <textarea id="admSetPageSections" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">Har bir blok: id, type, title, enabled, order.</p>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Footer JSON</label>
+                                <textarea id="admSetFooter" class="app-input settings-textarea code-area"></textarea>
+                                <p class="template-help">text va links orqali universal shablon footer sozlamalari.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="adm-add-btn solid" id="admSaveSettingsBtn">Saqlash</button>
+            </div>
+
+        </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-tab="home">
+            <i class="fi fi-rr-home"></i>
+            <span>Asosiy</span>
+        </button>
+        <button class="nav-item" data-tab="cart">
+            <i class="fi fi-rr-shopping-cart"></i>
+            <span>Savat</span>
+            <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-item" data-tab="offices">
+            <i class="fi fi-rr-marker"></i>
+            <span>Filiallar</span>
+        </button>
+        <button class="nav-item" data-tab="profile">
+            <i class="fi fi-rr-user"></i>
+            <span>Profil</span>
+        </button>
+    </nav>
+
+    <div id="admCancelModal" class="modal-overlay">
+        <div class="modal adm-cancel-modal">
+            <div class="adm-modal-header">
+                <i class="fi fi-rr-cross-circle"></i>
+                <h3>Bekor qilish sababi</h3>
+            </div>
+            <input type="hidden" id="cancelOrderId">
+            <div class="adm-reason-list">
+                <label class="adm-reason-item">
+                    <input type="radio" name="cancelReason" value="Mijoz fikridan qaytdi"> Mijoz fikridan qaytdi
+                </label>
+                <label class="adm-reason-item">
+                    <input type="radio" name="cancelReason" value="Tovar omborda qolmagan"> Tovar omborda qolmagan
+                </label>
+                <label class="adm-reason-item">
+                    <input type="radio" name="cancelReason" value="To'lov tasdiqlanmadi"> To'lov tasdiqlanmadi
+                </label>
+                <label class="adm-reason-item">
+                    <input type="radio" name="cancelReason" value="Boshqa sabab"> Boshqa sabab
+                </label>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="adm-modal-cancel-btn" id="cancelModalClose">Yopish</button>
+                <button class="adm-modal-confirm-btn adm-modal-confirm-red" id="cancelModalConfirm">Bekor qilish</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admProductModal" class="modal-overlay">
+        <div class="modal adm-prod-modal">
+            <div class="adm-modal-header">
+                <i class="fi fi-rr-edit"></i>
+                <h3 id="admProdTitle">Tovar tahrirlash</h3>
+            </div>
+            <input type="hidden" id="admProdId">
+            <input type="hidden" id="admProdImageName">
+
+            <div class="adm-img-upload-wrap" id="admImgWrap">
+                <div class="adm-images-list" id="admImagesList" style="display:flex; gap:10px; overflow-x:auto; margin-bottom:8px; padding-bottom:4px;"></div>
+                <input type="file" id="admProdImageFile" accept="image/*" style="opacity:0; position:absolute; z-index:-1; width:0; height:0;" multiple>
+                <div class="adm-img-actions">
+                    <button type="button" class="adm-img-btn" id="admSelectImgBtn" style="width:100%;">Rasm yuklash</button>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom:12px;">
+                <label class="input-label">Nomi <span style="color:var(--color-accent)">*</span></label>
+                <input type="text" id="admProdName" class="app-input" placeholder="Mahsulot nomi">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Narxi (so'm)</label>
+                    <input type="number" id="admProdPrice" class="app-input" placeholder="0">
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Eski narx</label>
+                    <input type="number" id="admProdOldPrice" class="app-input" placeholder="0">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div class="input-group" style="margin-bottom:0; position:relative;">
+                    <label class="input-label">Kategoriya</label>
+                    <input type="text" id="admProdCategory" class="app-input" placeholder="Tanlang yoki kiriting..." autocomplete="off">
+                    <div id="admCategoryDropdown" class="suggest-dropdown" style="max-height:150px; border: 1px solid var(--divider); box-shadow: none;"></div>
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Kolleksiya</label>
+                    <input type="text" id="admProdCollection" class="app-input" placeholder="Bestseller, Premium...">
+                </div>
+            </div>
+            <div class="input-group" style="margin-bottom:12px;">
+                <label class="input-label">Ta'rif</label>
+                <textarea id="admProdDesc" class="app-input" style="height:80px; padding:10px 14px; resize:none; line-height:1.5;" placeholder="Mahsulot haqida..."></textarea>
+            </div>
+            <div class="input-group" style="margin-bottom:12px;">
+                <label class="input-label">Qidiruv kalitlari</label>
+                <input type="text" id="admProdKeywords" class="app-input" placeholder="qulupnay, box, sovg'a...">
+            </div>
+            <div class="input-group" style="margin-bottom:12px;">
+                <label class="input-label">SKU / artikul</label>
+                <input type="text" id="admProdSku" class="app-input" placeholder="CH-STRAW-001">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Badge yozuvlari</label>
+                    <input type="text" id="admProdBadges" class="app-input" placeholder="Bestseller, Premium, Yangi">
+                    <div class="badge-preset-row" id="admBadgePresets">
+                        <button type="button" class="badge-preset-btn" data-badge="VIP">VIP</button>
+                        <button type="button" class="badge-preset-btn" data-badge="TOP">TOP</button>
+                        <button type="button" class="badge-preset-btn" data-badge="Premium">Premium</button>
+                        <button type="button" class="badge-preset-btn" data-badge="Limited">Limited</button>
+                        <button type="button" class="badge-preset-btn" data-badge="Yangi">Yangi</button>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Teglar</label>
+                    <input type="text" id="admProdTags" class="app-input" placeholder="milk chocolate, gift, 12 berries">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Chegirma (%)</label>
+                    <input type="number" id="admProdDiscount" class="app-input" value="0" min="0" max="99">
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label class="input-label">Zaxira</label>
+                    <input type="number" id="admProdStock" class="app-input" value="-1" placeholder="-1 = cheksiz">
+                </div>
+            </div>
+
+            <div class="adm-variants-section">
+                <div class="adm-variants-header">
+                    <label class="input-label" style="margin:0;">Hajmlar / Variantlar</label>
+                    <button type="button" class="adm-add-variant-btn" id="admAddVariantBtn">+ Qo'shish</button>
+                </div>
+                <p style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">Masalan: 12 ta rezavor - 129000 so'm</p>
+                <div id="admVariantsList" class="adm-variants-list"></div>
+            </div>
+
+            <div class="adm-toggle-row">
+                <label class="adm-toggle-label">1+1 Aksiya</label>
+                <label class="adm-switch">
+                    <input type="checkbox" id="admProdBogo">
+                    <span class="adm-slider"></span>
+                </label>
+            </div>
+            <div class="adm-product-flags">
+                <label><input type="checkbox" id="admProdFeatured"> Featured / Top</label>
+                <label><input type="checkbox" id="admProdBestseller"> Bestseller</label>
+                <label><input type="checkbox" id="admProdNew"> Yangi</label>
+                <label><input type="checkbox" id="admProdLimited"> Limited</label>
+            </div>
+            <div class="adm-toggle-row">
+                <label class="adm-toggle-label">Sotuvda</label>
+                <label class="adm-switch">
+                    <input type="checkbox" id="admProdActive" checked>
+                    <span class="adm-slider"></span>
+                </label>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="adm-modal-cancel-btn" id="admProdCancelBtn">Bekor qilish</button>
+                <button class="adm-modal-confirm-btn" id="admProdSaveBtn">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admPromoModal" class="modal-overlay">
+        <div class="modal adm-prod-modal adm-promo-modal">
+            <div class="adm-modal-header">
+                <i class="fi fi-rr-ticket"></i>
+                <h3 id="admPromoTitle">Promokod</h3>
+            </div>
+            <input type="hidden" id="admPromoId">
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Code</label>
+                    <input type="text" id="admPromoCode" class="app-input" placeholder="LOVE10">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Turi</label>
+                    <select id="admPromoType" class="app-input">
+                        <option value="percent">Foiz chegirma</option>
+                        <option value="fixed_amount">Fiks summa</option>
+                        <option value="free_delivery">Bepul yetkazish</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Nomi</label>
+                <input type="text" id="admPromoName" class="app-input" placeholder="Qisqa nom">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Tavsif</label>
+                <textarea id="admPromoDesc" class="app-input settings-textarea"></textarea>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Chegirma qiymati</label>
+                    <input type="number" id="admPromoValue" class="app-input" min="0">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Max chegirma</label>
+                    <input type="number" id="admPromoMax" class="app-input" min="0">
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Min buyurtma</label>
+                    <input type="number" id="admPromoMin" class="app-input" min="0">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Priority</label>
+                    <input type="number" id="admPromoPriority" class="app-input" value="100" min="0">
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Boshlanish</label>
+                    <input type="date" id="admPromoStarts" class="app-input">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Tugash</label>
+                    <input type="date" id="admPromoEnds" class="app-input">
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Umumiy limit</label>
+                    <input type="number" id="admPromoTotalLimit" class="app-input" min="0">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">User limit</label>
+                    <input type="number" id="admPromoUserLimit" class="app-input" min="0">
+                </div>
+            </div>
+            <div class="adm-promo-checks">
+                <label><input type="checkbox" id="admPromoActive"> Aktiv</label>
+                <label><input type="checkbox" id="admPromoFirstOrder"> Faqat birinchi buyurtma</label>
+                <label><input type="checkbox" id="admPromoNewUsers"> Faqat yangi mijozlar</label>
+                <label><input type="checkbox" id="admPromoStackable"> Stackable</label>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Yetkazish turi</label>
+                <div class="adm-promo-checks compact">
+                    <label><input type="checkbox" name="admPromoDelivery" value="delivery"> Delivery</label>
+                    <label><input type="checkbox" name="admPromoDelivery" value="pickup"> Pickup</label>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">To'lov usullari</label>
+                <div class="adm-promo-checks compact">
+                    <label><input type="checkbox" name="admPromoPayment" value="cash"> Cash</label>
+                    <label><input type="checkbox" name="admPromoPayment" value="card"> Card</label>
+                    <label><input type="checkbox" name="admPromoPayment" value="click"> Click</label>
+                    <label><input type="checkbox" name="admPromoPayment" value="payme"> Payme</label>
+                    <label><input type="checkbox" name="admPromoPayment" value="transfer"> Transfer</label>
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Product IDs</label>
+                    <textarea id="admPromoProducts" class="app-input settings-textarea code-area" placeholder="1,2,3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Category names</label>
+                    <textarea id="admPromoCategories" class="app-input settings-textarea code-area" placeholder="Premium box, Bestseller"></textarea>
+                </div>
+            </div>
+            <div class="adm-promo-help" id="admPromoHelp"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="adm-modal-cancel-btn" id="admPromoCancelBtn">Bekor qilish</button>
+                <button class="adm-modal-confirm-btn" id="admPromoSaveBtn">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admAuthModal" class="modal-overlay">
+        <div class="modal adm-auth-modal">
+            <button class="adm-auth-back" id="admAuthBackBtn" type="button">
+                <i class="fi fi-rr-arrow-left"></i>
+            </button>
+            <div class="adm-auth-icon">
+                <i class="fi fi-rr-lock"></i>
+            </div>
+            <h3 class="adm-auth-title">Kirish</h3>
+            <p class="adm-auth-sub">Boshqaruv paneliga kirish uchun parolni kiriting</p>
+            <input type="password" id="admAuthInput" class="app-input adm-auth-input" placeholder="• • • •">
+            <button class="adm-modal-confirm-btn" id="admAuthBtn" style="width:100%; margin-top:16px; height:48px; font-size:15px;">Kirish</button>
+        </div>
+    </div>
+
+    <div id="admCarouselModal" class="modal-overlay">
+        <div class="modal adm-prod-modal carousel-admin-modal">
+            <div class="adm-modal-header">
+                <i class="fi fi-rr-picture"></i>
+                <h3>Aksiyalar karuseli</h3>
+            </div>
+            <input type="file" id="admCarouselFiles" accept="image/*" multiple style="opacity:0; position:absolute; z-index:-1; width:0; height:0;">
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Sarlavha</label>
+                    <input type="text" id="admCarouselTitle" class="app-input" placeholder="Aksiya nomi">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Podzagolovok</label>
+                    <input type="text" id="admCarouselSubtitle" class="app-input" placeholder="Qisqa izoh">
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Tugma matni</label>
+                    <input type="text" id="admCarouselActionText" class="app-input" placeholder="Ko'rish">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Interval (ms)</label>
+                    <input type="number" id="admCarouselInterval" class="app-input" value="4500" min="1500">
+                </div>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">Tartib</label>
+                    <input type="number" id="admCarouselSort" class="app-input" value="0" min="0">
+                </div>
+                <label class="adm-toggle-row">
+                    <span>Aktiv</span>
+                    <input type="checkbox" id="admCarouselActive" checked>
+                </label>
+            </div>
+            <div class="settings-two-col">
+                <div class="input-group">
+                    <label class="input-label">O'tish turi</label>
+                    <select id="admCarouselTargetType" class="app-input">
+                        <option value="anchor">Anchor</option>
+                        <option value="category">Kategoriya</option>
+                        <option value="product_id">Product ID</option>
+                        <option value="external_link">Tashqi link</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">O'tish qiymati</label>
+                    <input type="text" id="admCarouselTargetValue" class="app-input" placeholder="#catalog">
+                </div>
+            </div>
+            <button class="adm-add-btn" id="admCarouselUploadBtn" type="button">
+                <i class="fi fi-rr-upload"></i>
+                Rasm yuklash
+            </button>
+            <input type="hidden" id="admCarouselEditId">
+            <input type="hidden" id="admCarouselImageName">
+            <div class="settings-two-col">
+                <button class="adm-modal-confirm-btn" id="admCarouselSaveBtn" type="button">Saqlash</button>
+                <button class="adm-modal-cancel-btn" id="admCarouselResetBtn" type="button">Yangi banner</button>
+            </div>
+            <div id="admCarouselList" class="adm-carousel-list"></div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="adm-modal-cancel-btn" id="admCarouselCloseBtn">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="maintenanceOverlay" class="maintenance-overlay" style="display:none;">
+        <div class="maintenance-box">
+            <div class="maintenance-icon"><i class="fi fi-rr-tools"></i></div>
+            <h2>Texnik ishlar</h2>
+            <p id="maintenanceText">Hozir texnik ishlar olib borilmoqda. Iltimos, keyinroq urinib ko'ring.</p>
+        </div>
+    </div>
+
+    <script src="src/shared/config/template-defaults.js?v=3"></script>
+    <script src="src/shared/lib/dom.js?v=2"></script>
+    <script src="src/shared/api/client.js?v=2"></script>
+    <script src="src/shared/ui/ui-kit.js?v=2"></script>
+    <script src="src/shared/ui/color-theme.js?v=3"></script>
+    <script src="src/shared/motion/durations.js?v=4"></script>
+    <script src="src/shared/motion/easing.js?v=4"></script>
+    <script src="src/shared/motion/presets.js?v=3"></script>
+    <script src="src/shared/motion/variants.js?v=2"></script>
+    <script src="src/shared/motion/transitions.js?v=3"></script>
+    <script src="src/features/template/template-engine.js?v=4"></script>
+    <script src="src/app/bootstrap.js?v=2"></script>
+    <script src="app.js?v=36"></script>
+    <script src="admin.js?v=32"></script>
+</body>
+</html>

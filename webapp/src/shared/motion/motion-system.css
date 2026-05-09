@@ -1,0 +1,258 @@
+:root {
+    --motion-duration-instant: 1ms;
+    --motion-duration-micro: 120ms;
+    --motion-duration-fast: 120ms;
+    --motion-duration-base: 170ms;
+    --motion-duration-page: 170ms;
+    --motion-duration-deliberate: 220ms;
+    --motion-duration-slow: 220ms;
+    --motion-duration-modal: 220ms;
+    --motion-duration-list: 180ms;
+    --motion-duration-toast: 180ms;
+
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --motion-ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --motion-ease-emphasized: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --motion-ease-entrance: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --motion-ease-press: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes ui-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ui-overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ui-overlay-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes ui-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.992);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes ui-modal-out {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(8px) scale(0.996);
+    }
+}
+
+@keyframes ui-spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-fade-up,
+.animate-pop-in,
+.animate-fade-in,
+.stagger > *,
+.catalog-group,
+.product-card,
+.adm-stat-card,
+.adm-order-card,
+.adm-product-card,
+.adm-user-card,
+.adm-variant-row,
+.nav-item.active i,
+.modal-overlay.open,
+.product-modal-overlay.open,
+.modal,
+.product-modal {
+    animation: none !important;
+}
+
+.page {
+    transform: none !important;
+    transition: opacity var(--motion-duration-base) var(--motion-ease-standard) !important;
+}
+
+.page.active {
+    transform: none !important;
+}
+
+button,
+.app-btn,
+.checkout-btn,
+.modal-btn,
+.qty-btn,
+.card-btn,
+.card-qty-btn,
+.adm-action-btn,
+.adm-prod-btn,
+.adm-add-btn,
+.adm-back-btn,
+.adm-refresh-btn,
+.adm-modal-confirm-btn,
+.adm-modal-cancel-btn,
+.tab,
+.nav-item,
+.adm-tab-item,
+.adm-chip,
+.opt-btn,
+.variant-btn,
+.color-preset,
+.suggest-item,
+.adm-reason-item,
+.office-card,
+.product-card,
+.cart-item,
+.adm-product-card,
+.adm-user-card,
+.adm-order-card,
+.profile-card,
+.profile-edit-card,
+.cart-summary,
+.settings-grid,
+.badge,
+.toast,
+.promo-slide,
+.promo-slide-copy,
+.card-image,
+.card-image-img,
+.modal-image,
+.cart-item-img,
+.adm-carousel-item,
+.settings-chip-item,
+.settings-nav-item,
+.settings-branch-item,
+.app-input,
+.search-bar input,
+.color-picker-shell,
+.segment-slider,
+.promo-carousel-track,
+.promo-dot,
+.modal-img-dot,
+.adm-slider,
+.adm-slider::before {
+    transition-duration: var(--motion-duration-base) !important;
+    transition-timing-function: var(--motion-ease-standard) !important;
+}
+
+button:active:not(:disabled),
+.tab:active,
+.nav-item:active,
+.adm-tab-item:active,
+.adm-chip:active,
+.opt-btn:active,
+.variant-btn:active,
+.color-preset:active,
+.suggest-item:active {
+    transform: scale(0.985) !important;
+}
+
+.branch-card:active,
+.office-card:active,
+.product-card:active,
+.cart-item:active,
+.profile-card:active,
+.profile-edit-card:active,
+.cart-summary:active,
+.adm-stat-card:active,
+.adm-product-card:active,
+.adm-user-card:active,
+.adm-order-card:active,
+.settings-grid:active {
+    transform: none !important;
+}
+
+.motion-ready [data-motion-ready="1"] {
+    animation: ui-fade-up var(--motion-duration-list) var(--motion-ease-soft) both !important;
+    animation-delay: calc(min(var(--motion-index, 0), 8) * 16ms);
+}
+
+.suggest-dropdown,
+#admCategoryDropdown {
+    display: block !important;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition:
+        opacity var(--motion-duration-fast) var(--motion-ease-standard),
+        transform var(--motion-duration-fast) var(--motion-ease-standard) !important;
+}
+
+.suggest-dropdown.open,
+#admCategoryDropdown.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.modal-overlay.open,
+.product-modal-overlay.open {
+    display: flex !important;
+    animation: ui-overlay-in var(--motion-duration-modal) var(--motion-ease-standard) both !important;
+}
+
+.modal-overlay.motion-closing,
+.product-modal-overlay.motion-closing {
+    display: flex !important;
+    pointer-events: none;
+    animation: ui-overlay-out var(--motion-duration-modal) var(--motion-ease-standard) both !important;
+}
+
+.modal-overlay.open .modal,
+.product-modal-overlay.open .product-modal {
+    animation: ui-modal-in var(--motion-duration-modal) var(--motion-ease-soft) both !important;
+}
+
+.modal-overlay.motion-closing .modal,
+.product-modal-overlay.motion-closing .product-modal {
+    animation: ui-modal-out var(--motion-duration-modal) var(--motion-ease-standard) both !important;
+}
+
+.toast {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+        opacity var(--motion-duration-toast) var(--motion-ease-standard),
+        transform var(--motion-duration-toast) var(--motion-ease-standard) !important;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.adm-spinner,
+.adm-refresh-btn.spinning i,
+.adm-refresh-btn.spinning svg {
+    animation: ui-spin 700ms linear infinite !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transform: none !important;
+    }
+}

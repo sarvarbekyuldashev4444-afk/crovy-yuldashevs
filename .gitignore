@@ -1,0 +1,17 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+*.log
+.env
+config.txt
+*.db
+*.sqlite
+*.sqlite3
+backups/
+/data/
+.local-data/
+.local-crovy-data/
+.smoke-data/
+tmpdata/
+media/
+webapp/uploads/tmp/
