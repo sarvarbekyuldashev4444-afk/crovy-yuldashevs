@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 import logging
@@ -592,7 +593,20 @@ def _sanitize_promo_payload(data):
 
 
 def create_api_app(bot: Bot, dp: Dispatcher):
-    app = web.Application()
+    @web.middleware
+    async def db_ready_middleware(request, handler):
+        if not request.path.startswith("/api/") or request.path == "/api/health":
+            return await handler(request)
+        event = request.app.get("db_ready_event")
+        if event and not event.is_set():
+            try:
+                await asyncio.wait_for(asyncio.shield(event.wait()), timeout=60)
+            except asyncio.TimeoutError:
+                return web.json_response({"error": "Service warming up"}, status=503)
+        return await handler(request)
+
+    app = web.Application(middlewares=[db_ready_middleware])
+    app["db_ready_event"] = asyncio.Event()
 
     async def api_health(request):
         return web.json_response({"ok": True})

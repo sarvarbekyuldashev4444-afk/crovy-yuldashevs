@@ -1,6 +1,7 @@
 import aiosqlite
 import json
 import logging
+import os
 import random
 import string
 import config
@@ -10,11 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 async def _connect():
+    os.makedirs(os.path.dirname(config.DB_PATH) or config.DATA_DIR or ".", exist_ok=True)
     return aiosqlite.connect(config.DB_PATH)
 
 
 async def init_db():
-    runtime_storage.prepare_runtime_storage()
+    try:
+        runtime_storage.prepare_runtime_storage()
+    except Exception:
+        logger.exception("Runtime storage preparation failed; continuing with SQLite bootstrap")
+        os.makedirs(os.path.dirname(config.DB_PATH) or config.DATA_DIR or ".", exist_ok=True)
+        os.makedirs(config.UPLOAD_DIR, exist_ok=True)
     async with await _connect() as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (

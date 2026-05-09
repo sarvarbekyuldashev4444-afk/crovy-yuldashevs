@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p /data/uploads
 
-CMD ["sh", "-c", "python scripts/prepare_market_db.py && python main.py"]
+CMD ["python", "main.py"]

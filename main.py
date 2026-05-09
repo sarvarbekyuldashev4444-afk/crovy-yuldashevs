@@ -35,21 +35,42 @@ async def update_bot_menu():
         logger.error("Menu error: %s", e)
 
 
+async def bootstrap_services(app):
+    delay = 5
+    while True:
+        try:
+            await database.init_db()
+            db_ready_event = app.get("db_ready_event")
+            if db_ready_event and not db_ready_event.is_set():
+                db_ready_event.set()
+            await update_bot_menu()
+            logger.info("Bootstrap complete; starting Telegram bot polling in background")
+            await dp.start_polling(bot)
+            logger.info("Telegram bot polling stopped")
+            return
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            logger.exception("Bootstrap failed: %s", e)
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 60)
+
+
 async def on_startup(app):
-    await database.init_db()
-    await update_bot_menu()
-    app["bot_polling_task"] = asyncio.create_task(dp.start_polling(bot))
-    logger.info("Telegram bot polling started")
+    app["bootstrap_task"] = asyncio.create_task(bootstrap_services(app))
+    logger.info("HTTP server started; background bootstrap scheduled")
 
 
 async def on_cleanup(app):
-    task = app.get("bot_polling_task")
+    task = app.get("bootstrap_task")
     if task:
         task.cancel()
         try:
             await task
         except asyncio.CancelledError:
             pass
+        except Exception as e:
+            logger.debug("Bootstrap task finished with error during shutdown: %s", e)
     await bot.session.close()
 
 
